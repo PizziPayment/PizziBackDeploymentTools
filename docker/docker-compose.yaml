@@ -1,0 +1,54 @@
+version: '3.3'
+services:
+  db:
+    container_name: pizzi_db
+    image: postgres:alpine
+    restart: on-failure
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./PizziAPIBdd/sources:/docker-entrypoint-initdb.d
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    ports:
+      - "5432:5432"
+    networks:
+      - rsc-server-tier
+      - auth-server-tier
+
+  rsc-server:
+    container_name: pizzi_rsc_server
+    image: pizzi-rsc-runner
+    restart: on-failure
+    ports:
+      - "3000:3000"
+    networks:
+      - rsc-server-tier
+    depends_on:
+      - db
+
+
+  auth-server:
+    container_name: pizzi_auth_server
+    image: pizzi-auth-runner
+    restart: on-failure
+    environment:
+      - DB_HOST=db
+      - DB_PORT=${DB_PORT}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+    ports:
+      - "3001:3000"
+    networks:
+      - auth-server-tier
+    depends_on:
+      - db
+
+volumes:
+  db-data:
+
+networks:
+  rsc-server-tier:
+  auth-server-tier:
