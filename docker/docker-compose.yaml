@@ -16,6 +16,22 @@ services:
     networks:
       - rsc-server-tier
       - auth-server-tier
+      - db-tier
+
+  pgadmin:
+    container_name: pgadmin4
+    image: dpage/pgadmin4
+    restart: on-failure
+    ports:
+      - 8465:8465
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=pizzi@pizzi.com
+      - PGADMIN_DEFAULT_PASSWORD=pizzi_password
+      - PGADMIN_LISTEN_PORT=8465
+    volumes:
+      - pizzi-pgadmin-data:/var/lib/pgadmin
+    networks:
+      - db-tier
 
   rsc-server:
     container_name: pizzi_rsc_server
@@ -47,7 +63,9 @@ services:
 
 volumes:
   db-data:
+  pizzi-pgadmin-data:
 
 networks:
   rsc-server-tier:
   auth-server-tier:
+  db-tier:
