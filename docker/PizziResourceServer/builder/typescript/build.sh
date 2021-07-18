@@ -1,9 +1,7 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
 NPM_CACHE=/npm-cache
-
-# Stop script when something fails
-set -euo pipefail
 
 npm set cache $NPM_CACHE
 

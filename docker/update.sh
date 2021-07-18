@@ -1,9 +1,5 @@
 #!/usr/bin/env bash
-
-# Stop script when something fails
 set -euo pipefail
-
-# Make sure database is running
 
 GIT_USER="git"
 GIT_URL="$GIT_USER@github.com:PizziPayment"

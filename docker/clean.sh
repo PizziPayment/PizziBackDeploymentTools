@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
 DB_BASE_DIR=PizziAPIBdd
 AUTH_SERVER_BASE_DIR=PizziAuthorizationServer
