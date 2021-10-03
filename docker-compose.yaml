@@ -25,9 +25,9 @@ services:
     ports:
       - 8465:8465
     environment:
-      - PGADMIN_DEFAULT_EMAIL=pizzi@pizzi.com
-      - PGADMIN_DEFAULT_PASSWORD=pizzi_password
-      - PGADMIN_LISTEN_PORT=8465
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
+      - PGADMIN_LISTEN_PORT=${PGADMIN_LISTEN_PORT}
     volumes:
       - pizzi-pgadmin-data:/var/lib/pgadmin
     networks:
