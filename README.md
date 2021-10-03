@@ -13,10 +13,10 @@
     - Compile typescript in a container
     - Build a runner from the produced artefacts
 
-- `clean.sh`: cleans artefacts produced by the `update.sh` and remove created
+- `clean.sh`: cleans artefacts produced by the `update.sh` and removes created
   docker volume and images.
 
-Once you ran `update.sh`, `docker-compose.yaml`'s services can be launched
+Once you've run `update.sh`, `docker-compose.yaml`'s services can be launched
 in the following order:
 - db
 - rsc-server auth-server
