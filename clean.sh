@@ -1,52 +1,47 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-DB_BASE_DIR=PizziAPIBdd
-AUTH_SERVER_BASE_DIR=PizziAuthorizationServer
-RES_SERVER_BASE_DIR=PizziResourceServer
+AUTH_SERVER=PizziAuthorizationServer
+RSC_SERVER=PizziResourceServer
 
-chown_file() {
-    local file=$1
+delete_artefacts() {
+    local project=$1; shift
+    local artefacts=("$@")
+    for artefact in ${artefacts[@]}; do
+        artefact=$project/runner/artefacts/$artefact
 
-    if [[ -f $file ]]; then
-        set -x
-        sudo chown $(id -u):$(id -g) $file
-        set +x
+        if [[ -e $artefact ]]; then
+            rm -rf $artefact
+        fi
+    done
+}
+
+AUTH_SERVER_ARTEFACTS=("dist" "node_modules")
+delete_artefacts $AUTH_SERVER "${AUTH_SERVER_ARTEFACTS[@]}"
+RSC_SERVER_ARTEFACTS=("dist" "node_modules")
+delete_artefacts $RSC_SERVER "${RSC_SERVER_ARTEFACTS[@]}"
+
+rm -rf \
+    $AUTH_SERVER/builder/sources \
+    $RSC_SERVER/builder/sources
+
+docker_volumes=(
+    "pizzi-npm-cache"
+)
+for volume in ${docker_volumes[@]}; do
+    if [[ ! -z $(docker volume ls -f name=$volume -q) ]]; then
+        docker volume rm $volume
     fi
-}
+done
 
-remove_project_sources() {
-    echo "Remove $1 sources"
-
-    chown_file $1/builder/npm-fetch/sources/package-lock.json
-    chown_file $1/builder/typescript/sources/package-lock.json
-
-    rm -rf \
-        $1/builder/npm-fetch/sources/node_modules \
-        $1/builder/npm-fetch/sources/package.json \
-        $1/builder/npm-fetch/sources/package-lock.json \
-        $1/builder/sources \
-        $1/builder/typescript/sources/app \
-        $1/builder/typescript/sources/dist \
-        $1/builder/typescript/sources/node_modules \
-        $1/builder/typescript/sources/package.json \
-        $1/builder/typescript/sources/package-lock.json \
-        $1/builder/typescript/sources/tsconfig.json
-}
-
-remove_project_artefacts() {
-    echo "Remove $1 artefacts"
-    set -x
-    sudo rm -rf \
-        $1/runner/artefacts/dist \
-        $1/runner/artefacts/node_modules
-    set +x
-}
-
-remove_project_sources $AUTH_SERVER_BASE_DIR
-remove_project_sources $RES_SERVER_BASE_DIR
-
-remove_project_artefacts $AUTH_SERVER_BASE_DIR
-remove_project_artefacts $RES_SERVER_BASE_DIR
-
-rm -rf $DB_BASE_DIR/sources
+docker_images=(
+    "pizzi-auth_builder"
+    "pizzi-auth_runner"
+    "pizzi-rsc_builder"
+    "pizzi-rsc_runner"
+)
+for image in ${docker_images[@]}; do
+    if [[ ! -z $(docker image ls $volume -q) ]]; then
+        docker image rm -f $image
+    fi
+done

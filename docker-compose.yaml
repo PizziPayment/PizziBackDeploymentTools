@@ -37,8 +37,14 @@ services:
     container_name: pizzi_rsc_server
     image: pizzi-rsc-runner
     restart: on-failure
+    environment:
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
     ports:
-      - "3000:3000"
+      - "3000:5000"
     networks:
       - rsc-server-tier
     depends_on:
