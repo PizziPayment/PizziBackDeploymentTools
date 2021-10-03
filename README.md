@@ -2,13 +2,22 @@
 
 ## Scripts:
 - `update.sh`: builds the runner images of the authorization and resource
-  servers. To build those images, the script pulls the repositories and make
-  two `builder` images.
+  servers.
+  - Requirements:
+    - git
+    - npm
+    - docker
+  - Steps:
+    - Fetch project from github
+    - Fetch production project dependencies with npm
+    - Compile typescript in a container
+    - Build a runner from the produced artefacts
 
-- `clean.sh`: cleans artefacts and fetched packages needed by the build step.
+- `clean.sh`: cleans artefacts produced by the `update.sh` and remove created
+  docker volume and images.
 
-Once you ran `update.sh`, you can launch the services of the
-`docker-compose.yaml` in the following order:
+Once you ran `update.sh`, `docker-compose.yaml`'s services can be launched
+in the following order:
 - db
 - rsc-server auth-server
 
