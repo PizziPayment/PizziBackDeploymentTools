@@ -49,13 +49,14 @@ for volume in ${docker_volumes[@]}; do
 done
 
 docker_images=(
-    "pizzi-auth_builder"
-    "pizzi-auth_runner"
-    "pizzi-rsc_builder"
-    "pizzi-rsc_runner"
+    "pizzi-auth-builder"
+    "pizzi-auth-runner"
+    "pizzi-rsc-builder"
+    "pizzi-rsc-runner"
+    "pizzi-db-migration"
 )
 for image in ${docker_images[@]}; do
-    if [[ ! -z $(docker image ls $volume -q) ]]; then
+    if [[ ! -z $(docker image ls $image -q) ]]; then
         docker image rm -f $image
     fi
 done
