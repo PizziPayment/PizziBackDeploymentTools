@@ -27,7 +27,7 @@ in the following order:
 - db
 - db-migration
 - rsc-server auth-server
-```
+```bash
 docker compose up -d db
 sleep 3 # Let the database inits itself.
 docker compose run --rm db-migration
@@ -38,5 +38,5 @@ A `.env` file contains all the environment variables to set with default
 values. Tweak them as you wish.
 
 For now the `db-migration` image isn't configurable via an env file. As a
-substitution, a confgig file (`PizziAPIDB/config.json`) is mounted in the
+substitution, a config file (`PizziAPIDB/config.json`) is mounted in the
 container so you can changed the configuration without rebuilding the image.
