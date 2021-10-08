@@ -6,7 +6,6 @@ services:
     restart: on-failure
     volumes:
       - pizzi-db-data:/var/lib/postgresql/data
-      - ./PizziAPIBdd/sources:/docker-entrypoint-initdb.d
     environment:
       - POSTGRES_DB=${DB_NAME}
       - POSTGRES_USER=${DB_USER}
@@ -16,6 +15,15 @@ services:
     networks:
       - rsc-server-tier
       - auth-server-tier
+      - db-tier
+
+  db-migration:
+    container_name: pizzi_db_migration
+    image: pizzi-db-migration
+    restart: "no"
+    volumes:
+      - ./PizziAPIDB/config.json:/etc/PizziMigration/config.json
+    networks:
       - db-tier
 
   pgadmin:

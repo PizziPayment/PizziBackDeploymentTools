@@ -3,19 +3,17 @@ set -euo pipefail
 
 GIT_URL="git@github.com:PizziPayment"
 
-DB_REPO="$GIT_URL/PizziAPIBdd"
-DB_BASE_DIR="PizziAPIBdd"
-DB_REPO_BRANCH="master"
+DB_REPO="$GIT_URL/PizziAPIDB"
+DB_BASE_DIR="PizziAPIDB/sources"
+DB_BRANCH="master"
 
 AUTH_SERVER_REPO="$GIT_URL/PizziAuthorizationServer"
 AUTH_SERVER_BASE_DIR="PizziAuthorizationServer/builder/sources"
 AUTH_SERVER_BRANCH="master"
-AUTH_SERVER_DOCKER_RUNNER=pizzi-auth_runner
 
 RSC_SERVER_REPO="$GIT_URL/PizziResourceServer"
 RSC_SERVER_BASE_DIR="PizziResourceServer/builder/sources"
 RSC_SERVER_BRANCH="master"
-RSC_SERVER_DOCKER_RUNNER=pizzi-rsc_runner
 
 export ARTEFACTS_UID=$(id -u)
 export ARTEFACTS_GID=$(id -g)
@@ -114,16 +112,41 @@ build_runner() {
   cd -
 }
 
+########################
+# Build a Docker container to run the migration.
+# Globals:
+#   None
+# Arguments:
+#   build_dir: Path in which we do all our operations
+#   image_tag: Name of the docker image to build and run
+########################
+build_db_migrations() {
+  if [[ $# -ne 2 ]]; then
+    echo "Expected 2 arguments for build_runner(), got $#"
+    exit 1
+  fi
+
+  local build_dir=$1
+  local image_tag=$2
+
+  cd $build_dir
+
+  (cd "sources/deploy" && yarn install)
+  docker build . -t $image_tag
+
+  cd -
+}
+
 fetch_projet_source \
     $AUTH_SERVER_BASE_DIR \
     $AUTH_SERVER_REPO \
     $AUTH_SERVER_BRANCH
 build \
     'PizziAuthorizationServer' \
-    'pizzi-auth_builder'
+    'pizzi-auth-builder'
 build_runner \
     'PizziAuthorizationServer' \
-    'pizzi-auth_runner'
+    'pizzi-auth-runner'
 
 fetch_projet_source \
     $RSC_SERVER_BASE_DIR \
@@ -131,7 +154,15 @@ fetch_projet_source \
     $RSC_SERVER_BRANCH
 build \
     'PizziResourceServer' \
-    'pizzi-rsc_builder'
+    'pizzi-rsc-builder'
 build_runner \
     'PizziResourceServer' \
-    'pizzi-rsc_runner'
+    'pizzi-rsc-runner'
+
+fetch_projet_source \
+    $DB_BASE_DIR \
+    $DB_REPO \
+    $DB_BRANCH
+build_db_migrations \
+    'PizziAPIDB' \
+    pizzi-db-migration

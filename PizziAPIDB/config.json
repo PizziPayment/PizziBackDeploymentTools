@@ -1,0 +1,8 @@
+{
+  "host": "db",
+  "name": "db",
+  "port": 5432,
+  "user": "postgre",
+  "password": "postgre",
+  "logging": false
+}
