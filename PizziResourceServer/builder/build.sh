@@ -1,11 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-npm set cache $NPM_CACHE
+NPM_CACHE=/npm-cache
 
+yarn config set registry $REGISTY_URL/
+yarn config set cache-folder $NPM_CACHE
+
+echo "Resource server: Fetch dependencies"
+yarn install
 echo "Resource server: Compile typescript"
-npm install
-npm run build
+yarn run build
 
 echo "Copy artefacts"
 cp -r ./dist /artefacts
