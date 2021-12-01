@@ -27,9 +27,9 @@ delete_artefacts() {
     done
 }
 
-AUTH_SERVER_ARTEFACTS=("dist" "node_modules")
+AUTH_SERVER_ARTEFACTS=("dist" "node_modules" "config/custom-environment-variables.json" "config/default.json")
 delete_artefacts $AUTH_SERVER "runner/artefacts" "${AUTH_SERVER_ARTEFACTS[@]}"
-RSC_SERVER_ARTEFACTS=("dist" "node_modules")
+RSC_SERVER_ARTEFACTS=("dist" "node_modules" "config/custom-environment-variables.json" "config/default.json")
 delete_artefacts $RSC_SERVER "runner/artefacts" "${RSC_SERVER_ARTEFACTS[@]}"
 DB_ARTEFACTS=("node_modules")
 delete_artefacts $DB "source/deploy/node_modules" "${DB_ARTEFACTS[@]}"
@@ -60,3 +60,5 @@ for image in ${docker_images[@]}; do
         docker image rm -f $image
     fi
 done
+
+yarn cache clean --no-default-rc

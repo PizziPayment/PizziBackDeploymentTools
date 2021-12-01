@@ -15,6 +15,10 @@ RSC_SERVER_REPO="$GIT_URL/PizziResourceServer"
 RSC_SERVER_BASE_DIR="PizziResourceServer/builder/sources"
 RSC_SERVER_BRANCH="master"
 
+ENV_BUILD=".env_builder"
+
+REPO_ROOT_FOLDER=$(git rev-parse --show-toplevel)
+
 export ARTEFACTS_UID=$(id -u)
 export ARTEFACTS_GID=$(id -g)
 
@@ -48,6 +52,24 @@ fetch_projet_source() {
 }
 
 ########################
+# Source the `.env_builder` file
+# Globals:
+#   None
+# Arguments:
+#   env_file: a `.env` file to source
+########################
+source_env_file() {
+    if [[ $# -ne 1 ]]; then
+        echo "Expected 1 arguments for build_server(), got $#"
+        exit 1
+    fi
+
+    local env_file=$1
+
+    export $(grep -v '^#' "$REPO_ROOT_FOLDER/$env_file" | xargs -d '\n')
+}
+
+########################
 # Build the builder container for the specified project and run it to
 # produce desired artifacts.
 # Globals:
@@ -70,12 +92,15 @@ build() {
 
     cd $build_dir/builder
 
+    source_env_file $ENV_BUILD
     # Fetch project dependencies
-    npm --prefix ./sources install --production
+    yarn --cwd ./sources install --production
     cp -r ./sources/node_modules ../runner/artefacts
 
+    cp $REPO_ROOT_FOLDER/.npmrc ./sources
     docker volume create $npm_cache_volume_name
     docker build . -t $image_tag
+    rm ./sources/.npmrc
 
     docker run --rm \
       -v $PWD/../runner/artefacts:/artefacts \
@@ -83,7 +108,12 @@ build() {
       -e NPM_CACHE=$npm_cache_volume \
       -e ARTEFACTS_UID=$ARTEFACTS_UID \
       -e ARTEFACTS_GID=$ARTEFACTS_GID \
+      -e PIZZI_NPM_REGISTRY_TOKEN=$PIZZI_NPM_REGISTRY_TOKEN \
+      -e REGISTY_URL=$REGISTY_URL \
       -t $image_tag
+
+    cp sources/config/{custom-environment-variables.json,default.json} \
+        ../runner/artefacts/config
 
     cd -
 }
@@ -131,6 +161,7 @@ build_db_migrations() {
 
   cd $build_dir
 
+  source_env_file $ENV_BUILD
   (cd "sources/deploy" && yarn install)
   docker build . -t $image_tag
 

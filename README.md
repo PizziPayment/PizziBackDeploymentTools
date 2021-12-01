@@ -34,9 +34,16 @@ docker compose run --rm db-migration
 docker compose up -d auth-server rsc-server
 ```
 
-A `.env` file contains all the environment variables to set with default
-values. Tweak them as you wish.
-
 For now the `db-migration` image isn't configurable via an env file. As a
 substitution, a config file (`PizziAPIDB/config.json`) is mounted in the
 container so you can changed the configuration without rebuilding the image.
+
+### .env files
+
+Containers can be configured via environment variables. Runner and builder
+containers have an assigned `.env` file which is respectively `.env` and
+`.env_builder`.
+
+The **PIZZI_NPM_REGISTRY_TOKEN** variable in the `.env_builder` file must be
+set with a token that you can get from the [private NPM
+registry](https://pointecouteau.fr:40403/).
