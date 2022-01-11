@@ -8,14 +8,12 @@ DB_BASE_DIR="PizziAPIDB/sources"
 DB_BRANCH="master"
 
 AUTH_SERVER_REPO="$GIT_URL/PizziAuthorizationServer"
-AUTH_SERVER_BASE_DIR="PizziAuthorizationServer/builder/sources"
+AUTH_SERVER_BASE_DIR="PizziAuthorizationServer/sources"
 AUTH_SERVER_BRANCH="master"
 
 RSC_SERVER_REPO="$GIT_URL/PizziResourceServer"
-RSC_SERVER_BASE_DIR="PizziResourceServer/builder/sources"
-RSC_SERVER_BRANCH="master"
-
-ENV_BUILD=".env_builder"
+RSC_SERVER_BASE_DIR="PizziResourceServer/sources"
+RSC_SERVER_BRANCH="develop"
 
 REPO_ROOT_FOLDER=$(git rev-parse --show-toplevel)
 
@@ -45,28 +43,10 @@ fetch_projet_source() {
         git clone -b $git_branch $git_url $project_dir
     else
         (cd $project_dir &&
-            git fetch origin $git_branch
             git switch $git_branch
+            git pull origin $git_branch
         )
     fi
-}
-
-########################
-# Source the `.env_builder` file
-# Globals:
-#   None
-# Arguments:
-#   env_file: a `.env` file to source
-########################
-source_env_file() {
-    if [[ $# -ne 1 ]]; then
-        echo "Expected 1 arguments for build_server(), got $#"
-        exit 1
-    fi
-
-    local env_file=$1
-
-    export $(grep -v '^#' "$REPO_ROOT_FOLDER/$env_file" | xargs -d '\n')
 }
 
 ########################
@@ -76,46 +56,39 @@ source_env_file() {
 #   None
 # Arguments:
 #   build_dir: Path in which we do all our operations
-#   image_tag: Name of the docker image to build and run
 ########################
 build() {
-    if [[ $# -ne 2 ]]; then
-        echo "Expected 2 arguments for build_server(), got $#"
+    if [[ $# -ne 1 ]]; then
+        echo "Expected 1 arguments for build_server(), got $#"
         exit 1
     fi
-
     local build_dir=$1
-    local image_tag=$2
 
-    local npm_cache_volume_name='pizzi-npm-cache'
-    local npm_cache_volume='/npm-cache'
+    local cwd=$(pwd)
+    local yarn_cache_folder="$REPO_ROOT_FOLDER/.yarn/cache"
 
-    cd $build_dir/builder
+    cd $build_dir
 
-    source_env_file $ENV_BUILD
-    # Fetch project dependencies
-    yarn --cwd ./sources install --production
-    cp -r ./sources/node_modules ../runner/artefacts
+    # Fetch production project dependencies
+    cd sources
+    yarn config unset cacheFolder
+    yarn workspaces focus --all --production
+    cp -r ".yarn/cache" '../runner/artefacts/.yarn/'
+    cp '.pnp.cjs' '../runner/artefacts'
 
-    cp $REPO_ROOT_FOLDER/.npmrc ./sources
-    docker volume create $npm_cache_volume_name
-    docker build . -t $image_tag
-    rm ./sources/.npmrc
-
-    docker run --rm \
-      -v $PWD/../runner/artefacts:/artefacts \
-      -v $npm_cache_volume_name:$npm_cache_volume \
-      -e NPM_CACHE=$npm_cache_volume \
-      -e ARTEFACTS_UID=$ARTEFACTS_UID \
-      -e ARTEFACTS_GID=$ARTEFACTS_GID \
-      -e PIZZI_NPM_REGISTRY_TOKEN=$PIZZI_NPM_REGISTRY_TOKEN \
-      -e REGISTY_URL=$REGISTY_URL \
-      -t $image_tag
+    # Compile typescript
+    mkdir -p "$yarn_cache_folder"
+    yarn config set cacheFolder "$yarn_cache_folder"
+    yarn install
+    echo "Compiling typescript"
+    yarn run build
+    cp -r dist ../runner/artefacts
+    cd ..
 
     cp sources/config/{custom-environment-variables.json,default.json} \
-        ../runner/artefacts/config
+        runner/artefacts/config
 
-    cd -
+    cd "$cwd"
 }
 
 ########################
@@ -161,8 +134,7 @@ build_db_migrations() {
 
   cd $build_dir
 
-  source_env_file $ENV_BUILD
-  (cd "sources/deploy" && yarn install)
+  (cd "sources/deploy-db" && yarn install)
   docker build . -t $image_tag
 
   cd -
@@ -173,8 +145,7 @@ fetch_projet_source \
     $AUTH_SERVER_REPO \
     $AUTH_SERVER_BRANCH
 build \
-    'PizziAuthorizationServer' \
-    'pizzi-auth-builder'
+    'PizziAuthorizationServer'
 build_runner \
     'PizziAuthorizationServer' \
     'pizzi-auth-runner'
@@ -184,8 +155,7 @@ fetch_projet_source \
     $RSC_SERVER_REPO \
     $RSC_SERVER_BRANCH
 build \
-    'PizziResourceServer' \
-    'pizzi-rsc-builder'
+    'PizziResourceServer'
 build_runner \
     'PizziResourceServer' \
     'pizzi-rsc-runner'

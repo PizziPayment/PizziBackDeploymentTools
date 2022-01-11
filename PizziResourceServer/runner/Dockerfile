@@ -6,4 +6,4 @@ WORKDIR /usr/opt/PizziRsc
 
 EXPOSE 3000
 
-ENTRYPOINT ["node", "dist/index.js"]
+ENTRYPOINT ["node", "-r", "./.pnp.cjs", "dist/index.js"]
