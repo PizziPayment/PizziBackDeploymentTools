@@ -4,7 +4,8 @@ WORKDIR /usr/opt/PizziMigration
 
 VOLUME /etc/PizziMigration
 
-COPY sources/deploy/src ./src/
-COPY sources/deploy/node_modules ./node_modules/
+COPY sources/deploy-db/src ./src/
+COPY sources/deploy-db/.pnp.cjs .
+COPY sources/deploy-db/.yarn/cache .yarn/cache/
 
-ENTRYPOINT ["node", "src/main.js", "table", "alter", "-c", "/etc/PizziMigration/config.json"]
+ENTRYPOINT ["node", "-r", "./.pnp.cjs", "src/main.js", "table", "alter", "-c", "/etc/PizziMigration/config.json"]

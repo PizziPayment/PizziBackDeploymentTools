@@ -5,14 +5,13 @@
   server runner and the database migration tool.
   - Requirements:
     - git
-    - npm
-    - yarn (configured to access Pizzi's npm registry)
+    - yarn
     - docker
   - Steps:
     - Fetch project from github
     - For runners:
-        - Fetch production project dependencies with npm (artefact: `node_modules`)
-        - Compile typescript in a builder container (artefact: `dist`)
+        - Fetch production project dependencies with yarn (artefact: `.yarn/cache`)
+        - Compile typescript (artefact: `dist`)
         - Build a runner from the produced artefacts
     - For the db migration:
         - Fetch dependencies with yarn (artefact: `node_modules`)
@@ -20,7 +19,7 @@
 
 
 - `clean.sh`: cleans artefacts produced by the `update.sh` and removes created
-  docker volume and images.
+  docker images.
 
 Once you've run `update.sh`, `docker-compose.yaml`'s services can be launched
 in the following order:
@@ -40,10 +39,5 @@ container so you can changed the configuration without rebuilding the image.
 
 ### .env files
 
-Containers can be configured via environment variables. Runner and builder
-containers have an assigned `.env` file which is respectively `.env` and
-`.env_builder`.
-
-The **PIZZI_NPM_REGISTRY_TOKEN** variable in the `.env_builder` file must be
-set with a token that you can get from the [private NPM
-registry](https://pointecouteau.fr:40403/).
+A `.env` file with default value is available at the root of the repository for
+services in the compose file.

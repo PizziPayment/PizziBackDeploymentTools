@@ -27,31 +27,19 @@ delete_artefacts() {
     done
 }
 
-AUTH_SERVER_ARTEFACTS=("dist" "node_modules" "config/custom-environment-variables.json" "config/default.json")
+AUTH_SERVER_ARTEFACTS=("dist" ".yarn/cache" ".pnp.cjs" "config/custom-environment-variables.json" "config/default.json")
 delete_artefacts $AUTH_SERVER "runner/artefacts" "${AUTH_SERVER_ARTEFACTS[@]}"
-RSC_SERVER_ARTEFACTS=("dist" "node_modules" "config/custom-environment-variables.json" "config/default.json")
+RSC_SERVER_ARTEFACTS=("dist" ".yarn/cache" ".pnp.cjs" "config/custom-environment-variables.json" "config/default.json")
 delete_artefacts $RSC_SERVER "runner/artefacts" "${RSC_SERVER_ARTEFACTS[@]}"
-DB_ARTEFACTS=("node_modules")
-delete_artefacts $DB "source/deploy/node_modules" "${DB_ARTEFACTS[@]}"
 
 rm -rf \
-    $AUTH_SERVER/builder/sources \
-    $RSC_SERVER/builder/sources \
-    $DB/sources
-
-docker_volumes=(
-    "pizzi-npm-cache"
-)
-for volume in ${docker_volumes[@]}; do
-    if [[ ! -z $(docker volume ls -f name=$volume -q) ]]; then
-        docker volume rm $volume
-    fi
-done
+    $AUTH_SERVER/sources \
+    $RSC_SERVER/sources \
+    $DB/sources \
+    .yarn
 
 docker_images=(
-    "pizzi-auth-builder"
     "pizzi-auth-runner"
-    "pizzi-rsc-builder"
     "pizzi-rsc-runner"
     "pizzi-db-migration"
 )
@@ -60,5 +48,3 @@ for image in ${docker_images[@]}; do
         docker image rm -f $image
     fi
 done
-
-yarn cache clean --no-default-rc
