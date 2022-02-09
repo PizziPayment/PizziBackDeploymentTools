@@ -2,8 +2,8 @@ version: '3.3'
 services:
   db:
     container_name: pizzi_db
-    image: postgres:alpine
-    restart: on-failure
+    image: postgres:latest
+    restart: always
     volumes:
       - pizzi-db-data:/var/lib/postgresql/data
     environment:
