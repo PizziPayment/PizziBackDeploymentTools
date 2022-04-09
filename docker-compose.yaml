@@ -22,7 +22,7 @@ services:
     image: pizzi-db-migration
     restart: "no"
     volumes:
-      - ./PizziAPIDB/config.json:/etc/PizziMigration/config.json
+      - ./PizziDeploy/config.json:/etc/PizziMigration/config.json
     networks:
       - db-tier
 

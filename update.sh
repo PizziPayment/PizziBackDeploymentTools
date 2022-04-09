@@ -3,9 +3,9 @@ set -euo pipefail
 
 GIT_URL="git@github.com:PizziPayment"
 
-DB_REPO="$GIT_URL/PizziAPIDB"
-DB_BASE_DIR="PizziAPIDB/sources"
-DB_BRANCH="master"
+DEPLOY_REPO="$GIT_URL/DeployDB"
+DEPLOY_BASE_DIR="PizziDeploy/sources"
+DEPLOY_BRANCH="main"
 
 AUTH_SERVER_REPO="$GIT_URL/PizziAuthorizationServer"
 AUTH_SERVER_BASE_DIR="PizziAuthorizationServer/sources"
@@ -134,7 +134,7 @@ build_db_migrations() {
 
   cd $build_dir
 
-  (cd "sources/deploy-db" && yarn install)
+  (cd "sources" && yarn install)
   docker build . -t $image_tag
 
   cd -
@@ -161,9 +161,9 @@ build_runner \
     'pizzi-rsc-runner'
 
 fetch_projet_source \
-    $DB_BASE_DIR \
-    $DB_REPO \
-    $DB_BRANCH
+    $DEPLOY_BASE_DIR \
+    $DEPLOY_REPO \
+    $DEPLOY_BRANCH
 build_db_migrations \
-    'PizziAPIDB' \
+    'PizziDeploy' \
     pizzi-db-migration

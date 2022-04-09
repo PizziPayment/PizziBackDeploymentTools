@@ -3,7 +3,7 @@ set -euo pipefail
 
 AUTH_SERVER=PizziAuthorizationServer
 RSC_SERVER=PizziResourceServer
-DB=PizziAPIDB
+DB=PizziDeploy
 
 ########################
 # Delete artefacts of a project.
