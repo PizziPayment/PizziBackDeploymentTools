@@ -1,4 +1,4 @@
-FROM node:12-alpine
+FROM node:14-buster-slim
 
 COPY ./artefacts /usr/opt/PizziRsc
 
